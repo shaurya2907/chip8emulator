@@ -4,10 +4,15 @@
 
 int main(int argc, char** argv)
 {
-
     struct chip8 chip8;
-    chip8_memory_set(&chip8.memory,50,'Z');
-    printf("%c\n", chip8_memory_get(&chip8.memory,50));
+    chip8.registers.SP=0;
+
+chip8_stack_push(&chip8, 0xff);
+chip8_stack_push(&chip8, 0xaa);
+
+printf("%x\n",chip8_stack_pop(&chip8));
+printf("%x\n",chip8_stack_pop(&chip8));
+
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window *window =SDL_CreateWindow(
         EMULATOR_WINDOW_TITLE,

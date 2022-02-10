@@ -11,6 +11,6 @@ struct chip8_registers
     unsigned char sound_timer;
     unsigned short PC;
     unsigned char SP;
-};
+};  
 
 #endif
