@@ -47,7 +47,9 @@ int main(int argc, char **argv)
     struct chip8 chip8;
     chip8_init(&chip8);
     chip8_load(&chip8, buf, size);
-    
+    chip8_screen_draw_sprite(&chip8.screen , 32 ,30 , &chip8.memory.memory[0x00], 5);
+
+
 
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window *window = SDL_CreateWindow(
@@ -132,6 +134,10 @@ int main(int argc, char **argv)
             Beep(15000, 100 * chip8.registers.sound_timer);
             chip8.registers.sound_timer = 0;
         }
+
+        unsigned short opcode = chip8_memory_get_short(&chip8.memory,chip8.registers.PC);
+        chip8_exec(&chip8, opcode);
+        chip8.registers.PC +=2;
     }
 
 out:

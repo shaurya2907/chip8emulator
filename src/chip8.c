@@ -37,6 +37,13 @@ void chip8_load(struct chip8* chip8, const char* buf, size_t size)
 void chip8_exec(struct chip8* chip8, unsigned short opcode)
 {
 
+    switch(opcode)
+    {
+        case 0x00E0:
+            chip8_screen_clear(&chip8->screen);
+        break;
+    }
+
 
 
 }
