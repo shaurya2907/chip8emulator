@@ -67,7 +67,7 @@ static void chip8_-exec_extended_eight(struct chip8* chip8, unsigned short opcod
         chip8->registers.V[x]= chip8->registers.V[x]  chip8->registers.V[y];
         break;
         
-        //8xy4 - ADD Vx,Vy
+        //8xy4 - ADD Vx,Vy and store in Vx if Carry VF=1
 
         case 0x04:
         temp=chip8->registers.V[x] + chip8->registers.V[y];
@@ -79,7 +79,33 @@ static void chip8_-exec_extended_eight(struct chip8* chip8, unsigned short opcod
          chip8->registers.v[x] = tmp;
         break;
     
+        // 8xy5 - SUB Vx,Vy Set Vx=Vx-Vy set VF=Not borrow 
+        case 0x05:
+            chip8->registers.V[0x0f]= false;
+            if(chip8->registers.V[x] > chip8->registers.V[y])
+            {
+                chip8->registers.V[0x0f] = true;
+            }
+            chip8->registers.V[x]=chip8->registers.V[x] - chip8->registers.V[y];
+        break;
+
+        // 8xy6 - SHR Vx{ , Vy}
+        case 0x06:
+            chip8->registers.V[0x0f]=chip8->registers.V[x] & 0x01;
+            chip8->registers.V[x] /=2;
+        break;
     
+        // 8xy7 - SUBN Vx, Vy
+        case 0x07:
+            chip8->registers.V[0x0f] = chip8->registers.V[y] > chip8->registers.V[x];
+            chip8->registers.V[x] = chip8->registers.V[y]- chip8.regiters.V[x];
+        break;
+
+        //8xye - SHL Vx {, Vy}
+        case 0x0E:
+            chip8->registers.V[0x0f] = chip8->registers.V[x] & 0b10000000;
+            chip8->registers.V[x] *=2;
+        break;
     }
 }
 static void chip8_exec_extended(struct chip8* chip8, unsigned short opcode)
@@ -140,7 +166,18 @@ static void chip8_exec_extended(struct chip8* chip8, unsigned short opcode)
     
     break;
     
+    // 9xy0 - SNE Vx,Vy Skip next instruction if Vx!=Vy
+    case 0x9000:
+    if(chip8->registers.V[x]!=chip8->registers.V[y]) 
+    {
+           chip8->registers.PC=+2; 
+    }
+    break;
 
+    //Annn-Ld I, addr sets the I register to nnn
+    case 0xA000:
+    chip8->registers.I = nnn;
+    break;
     }
     
 }
