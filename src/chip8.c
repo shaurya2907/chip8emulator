@@ -87,12 +87,46 @@ static void chip8_exec_exteded_F(struct chip8 *chip8, unsigned short opcode)
 
     //ADD I,Vx  Set I=I+Vx
     case 0x1E:
-    chip8->registers.I=chip8->registers.I + chip8->regsiters.V[x];
+    chip8->registers.I=chip8->registers.I + chip8->registers.V[x];
     break;
 
     // fx29 LD F,Vx
     case 0x29:
-    chip8->registers.I= chip8->registers.V[x]*CHIP8_DEFAULT_SPRITE_HEIGHT
+    chip8->registers.I= chip8->registers.V[x]*CHIP8_DEFAULT_SPRITE_HEIGHT;
+    break;
+
+    // fx33 LD B, Vx
+    case 0x33:
+    {
+        unsigned char hundreds = chip8->registers.V[x]/100;
+        unsigned char tens = chip8->registers.V[x]/10 % 10;
+        unsigned char units = chip8->registers.V[x] % 10;
+        chip8_memory_set(&chip8->memory,chip8->registers.I, hundreds);
+        chip8_memory_set(&chip8->memory,chip8->registers.I+1, tens);
+        chip8_memory_set(&chip8->memory,chip8->registers.I+2, units);
+    }
+
+    break;
+
+    //fx55- LD [I],Vx
+    case 0x55:
+    {
+    for(int i=0; i<=x; i++)
+    {
+        chip8_memory_set(&chip8->memory, chip8->registers.I+i, chip8->registers.V[i]);
+    }
+    }
+    break;
+
+    //fx65- LD
+    case 0x65:
+    {
+        for(int i=0;i <=x;i++)
+        {
+            chip8->registers.V[i]=chip8_memory_get(&chip8->memory, chip8->registers.I+i);
+        }
+    }
+
     break;
 
     }

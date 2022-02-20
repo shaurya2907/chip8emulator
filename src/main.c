@@ -29,27 +29,23 @@ int main(int argc, char **argv)
         return -1;
     }
 
-
-    fseek(f, 0 , SEEK_END);
+    fseek(f, 0, SEEK_END);
     long size = ftell(f);
-    fseek(f, 0 , SEEK_SET);
-
+    fseek(f, 0, SEEK_SET);
 
     char buf[size];
-    int res = fread(buf, size,1,f);
-    if ( res!=1)
+    int res = fread(buf, size, 1, f);
+    if (res != 1)
     {
         printf("Failed to read from file");
         return -1;
     }
 
-
     struct chip8 chip8;
     chip8_init(&chip8);
     chip8_load(&chip8, buf, size);
-    chip8_keyboard_set_map(&chip8.keyboard,keyboard_map);
- 
- 
+    chip8_keyboard_set_map(&chip8.keyboard, keyboard_map);
+
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window *window = SDL_CreateWindow(
         EMULATOR_WINDOW_TITLE,
@@ -123,21 +119,20 @@ int main(int argc, char **argv)
 
         if (chip8.registers.delay_timer > 0)
         {
-            Sleep(100);
+            Sleep(1);
             chip8.registers.delay_timer -= 1;
         }
 
         if (chip8.registers.sound_timer > 0)
         {
 
-            Beep(15000, 100 * chip8.registers.sound_timer);
+            Beep(15000, 10 * chip8.registers.sound_timer);
             chip8.registers.sound_timer = 0;
         }
 
-        unsigned short opcode = chip8_memory_get_short(&chip8.memory,chip8.registers.PC);
-        chip8.registers.PC +=2;
+        unsigned short opcode = chip8_memory_get_short(&chip8.memory, chip8.registers.PC);
+        chip8.registers.PC += 2;
         chip8_exec(&chip8, opcode);
-        
     }
 
 out:
