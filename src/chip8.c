@@ -2,6 +2,8 @@
 #include <memory.h>
 #include<assert.h>
 #include<stdbool.h>
+#include<stdlib.h>
+#include<time.h>
 const char chip8_default_character_set[]={
     0xf0,0x90,0x90,0x90,0xf0,
     0x20,0x60,0x20,0x20,0x70,
@@ -35,7 +37,7 @@ void chip8_load(struct chip8* chip8, const char* buf, size_t size)
 
 }
 
-static void chip8_-exec_extended_eight(struct chip8* chip8, unsigned short opcode)
+static void chip8_exec_extended_eight(struct chip8* chip8, unsigned short opcode)
 {
     unsigned char x = (opcode >>8) & 0x000f;
     unsigned char y = (opcode >> 4) & 0x000f;       
@@ -64,19 +66,19 @@ static void chip8_-exec_extended_eight(struct chip8* chip8, unsigned short opcod
         //8xy3 - XOR Vx,Vy
 
         case 0x03:
-        chip8->registers.V[x]= chip8->registers.V[x]  chip8->registers.V[y];
+        chip8->registers.V[x]= chip8->registers.V[x]^chip8->registers.V[y];
         break;
         
         //8xy4 - ADD Vx,Vy and store in Vx if Carry VF=1
 
         case 0x04:
         temp=chip8->registers.V[x] + chip8->registers.V[y];
-        chip8->registers[0x0f]= false;
+        chip8->registers.V[0x0f]= false;
         if (temp > 0xff)
         {
             chip8->registers.V[0x0f] = true;
         }
-         chip8->registers.v[x] = tmp;
+         chip8->registers.V[x] = temp;
         break;
     
         // 8xy5 - SUB Vx,Vy Set Vx=Vx-Vy set VF=Not borrow 
@@ -98,7 +100,7 @@ static void chip8_-exec_extended_eight(struct chip8* chip8, unsigned short opcod
         // 8xy7 - SUBN Vx, Vy
         case 0x07:
             chip8->registers.V[0x0f] = chip8->registers.V[y] > chip8->registers.V[x];
-            chip8->registers.V[x] = chip8->registers.V[y]- chip8.regiters.V[x];
+            chip8->registers.V[x] = chip8->registers.V[y]- chip8->registers.V[x];
         break;
 
         //8xye - SHL Vx {, Vy}
@@ -113,6 +115,7 @@ static void chip8_exec_extended(struct chip8* chip8, unsigned short opcode)
     unsigned char x = (opcode >>8) & 0x000f;
     unsigned char y = (opcode >> 4) & 0x000f;
     unsigned char kk = opcode & 0x00ff;
+    unsigned char n = opcode & 0x000f;
 
     switch(opcode & 0xf000)
     {   // JP addr, 1nnn Jump to location nnn    
@@ -147,7 +150,7 @@ static void chip8_exec_extended(struct chip8* chip8, unsigned short opcode)
     case 0x5000:
         if(chip8->registers.V[x]=chip8->registers.V[y])
         {
-            PC=+2;
+            chip8->registers.PC=+2;
         }
     break;
 
@@ -178,6 +181,27 @@ static void chip8_exec_extended(struct chip8* chip8, unsigned short opcode)
     case 0xA000:
     chip8->registers.I = nnn;
     break;
+
+    //Bnnn Jp V0, addr jump to location nnn+V0
+    case 0xB000:
+    chip8->registers.PC= nnn +chip8->registers.V[0x00];
+    break;
+
+    //Cxkk - RND Vx, byte Set Vx= random byte AND kk
+    case 0xC000:
+     srand(clock());
+     chip8->registers.V[x] = (rand() % 255) & kk;
+    break;
+
+    // Dxyn DRW Vx , Vy , nibble. Draws sprite to the screen  
+    case 0xD000:
+    {
+        const char* sprite = (const char*)&chip8->memory.memory[chip8->registers.I];                         
+        chip8->registers.V[0x0f]=chip8_screen_draw_sprite(&chip8->screen, chip8->registers.V[x], chip8->registers.V[y], sprite , n );
+    }
+    break;
+
+
     }
     
 }
